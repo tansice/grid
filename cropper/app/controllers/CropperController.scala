@@ -108,23 +108,25 @@ class CropperController(auth: Authentication, crops: Crops, store: CropStore, no
     }
   }
 
-  def executeRequest(exportRequest: ExportRequest, user: Principal): Future[(String, Crop)] =
+  def executeRequest(exportRequest: ExportRequest, user: Principal): Future[(String, Crop)] = {
+    println("executing request!!")
     for {
-      _          <- verify(isMediaApiUri(exportRequest.uri), InvalidSource)
-      apiImage   <- fetchSourceFromApi(exportRequest.uri)
-      _          <- verify(apiImage.valid, InvalidImage)
+      _ <- verify(isMediaApiUri(exportRequest.uri), InvalidSource)
+      apiImage <- fetchSourceFromApi(exportRequest.uri)
+      _ <- verify(apiImage.valid, InvalidImage)
       // Image should always have dimensions, but we want to safely extract the Option
       dimensions <- ifDefined(apiImage.source.dimensions, InvalidImage)
-      cropSpec    = ExportRequest.toCropSpec(exportRequest, dimensions)
-      _          <- verify(crops.isWithinImage(cropSpec.bounds, dimensions), InvalidCropRequest)
-      crop        = Crop.createFromCropSource(
-        by            = Some(Authentication.getEmail(user)),
+      cropSpec = ExportRequest.toCropSpec(exportRequest, dimensions)
+      _ <- verify(crops.isWithinImage(cropSpec.bounds, dimensions), InvalidCropRequest)
+      crop = Crop.createFromCropSource(
+        by = Some(Authentication.getEmail(user)),
         timeRequested = Some(new DateTime()),
         specification = cropSpec
       )
       ExportResult(id, masterSizing, sizings) <- crops.export(apiImage, crop)
-      finalCrop   = Crop.createFromCrop(crop, masterSizing, sizings)
+      finalCrop = Crop.createFromCrop(crop, masterSizing, sizings)
     } yield (id, finalCrop)
+  }
 
   // TODO: lame, parse into URI object and compare host instead
   def isMediaApiUri(uri: String): Boolean = uri.startsWith(config.apiUri)

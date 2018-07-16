@@ -3,7 +3,7 @@ package lib
 import java.net.URL
 
 import com.gu.contentapi.client.model.v1.Content
-import com.gu.mediaservice.model.{DigitalUsageMetadata, PrintImageSize, PrintUsageMetadata}
+import com.gu.mediaservice.model.{DigitalUsageMetadata, PrintImageSize, PrintUsageMetadata, FrontUsageMetadaa}
 import org.joda.time.format.ISODateTimeFormat
 
 import scala.util.Try
@@ -43,6 +43,10 @@ class UsageMetadataBuilder(config: UsageConfig) {
         source = metadataMap.get("source").map(_.asInstanceOf[String])
       )
     }.toOption
+  }
+
+  def buildFront(frontId: String, addedBy: String, collectionName): FrontUsageMetadata = {
+    FrontUsageMetadata(frontId, addedBy, collectionName)
   }
 
   def build(content: Content): DigitalUsageMetadata = {

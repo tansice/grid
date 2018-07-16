@@ -17,6 +17,7 @@ case class MediaUsage(
   status: UsageStatus,
   printUsageMetadata: Option[PrintUsageMetadata],
   digitalUsageMetadata: Option[DigitalUsageMetadata],
+  frontUsageMetadata: Option[FrontUsageMetadata],
   lastModified: DateTime,
   dateAdded: Option[DateTime] = None,
   dateRemoved: Option[DateTime] = None
@@ -67,7 +68,8 @@ class MediaUsageOps(usageMetadataBuilder: UsageMetadataBuilder) {
     "image",
     printUsage.usageStatus,
     Some(printUsage.printUsageMetadata),
-    None,
+    digitalUsageMetadata = None,
+    frontUsageMetadata = None,
     printUsage.dateAdded
   )
 
@@ -83,7 +85,21 @@ class MediaUsageOps(usageMetadataBuilder: UsageMetadataBuilder) {
       status = mediaWrapper.contentStatus,
       printUsageMetadata = None,
       digitalUsageMetadata = Some(mediaWrapper.usageMetadata),
+      frontUsageMetadata = None,
       lastModified = mediaWrapper.lastModified
     )
   }
+
+  def build(frontUsage: FrontUsageRequest, usageId: String, grouping: String) = MediaUsage(
+    usageId,
+    grouping,
+    frontUsage.mediaId,
+    "front",
+    "image",
+    frontUsage.usageStatus,
+    digitalUsageMetadata = None,
+    printUsageMetadata = None,
+    frontUsageMetadata = Some(frontUsage.frontUsageMetadata),
+    lastModified = frontUsage.dataAdded
+  )
 }
